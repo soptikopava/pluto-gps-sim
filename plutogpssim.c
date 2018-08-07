@@ -26,6 +26,7 @@
 #define IQ_DAC_9BIT // Comment to use 8-Bit lookup tables for IQ sinus and cosinus
 
 #define NOTUSED(V) ((void) V)
+#define KHZ(x) ((long long)(x*1000.0 + .5))
 #define MHZ(x) ((long long)(x*1000000.0 + .5))
 #define GHZ(x) ((long long)(x*1000000000.0 + .5))
 #define NUM_SAMPLES 260000
@@ -35,6 +36,7 @@ struct stream_cfg {
     long long bw_hz; // Analog banwidth in Hz
     long long fs_hz; // Baseband sample rate in Hz
     long long lo_hz; // Local oscillator frequency in Hz
+	long long offsett; // Set offset of freg. in KHz
     const char* rfport; // Port name
     double gain_db; // Hardware gain
     pthread_cond_t data_cond;
@@ -1725,7 +1727,8 @@ static void usage(void) {
             "  -A <attenuation> Set TX attenuation [dB] (default -20.0)\n"
             "  -B <bw>          Set RF bandwidth [MHz] (default 5.0)\n"
             "  -u <uri>         ADALM-Pluto URI\n"
-            "  -n <network>     ADALM-Pluto network IP or hostname (default pluto.local)\n");
+            "  -n <network>     ADALM-Pluto network IP or hostname (default pluto.local)\n"
+			"  -o <offset>      Set offset of freq. [KHz] (default 0.0)\n");
 
     return;
 }
@@ -1949,6 +1952,7 @@ int main(int argc, char *argv[]) {
     plutotx.lo_hz = GHZ(1.575420); // 1.57542 GHz RF frequency
     plutotx.rfport = "A";
     plutotx.gain_db = -20.0;
+	plutotx.offsett = 0.0;
     plutotx.hostname = NULL;
     plutotx.uri = NULL;
     
@@ -1970,7 +1974,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    while ((result = getopt(argc, argv, "e:u:g:c:l:s:T:t:i:v:A:B:U:N:")) != -1) {
+    while ((result = getopt(argc, argv, "e:u:g:c:l:s:T:t:i:v:A:B:U:N:o:")) != -1) {
         switch (result) {
             case 'e':
                 strcpy(navfile, optarg);
@@ -2055,6 +2059,10 @@ int main(int argc, char *argv[]) {
                 break;
             case 'N':
                 plutotx.hostname = optarg;
+                break;                
+			case 'o':
+                plutotx.offsett = atof(optarg);
+				plutotx.lo_hz = plutotx.lo_hz + KHZ(plutotx.offsett);
                 break;                
             case ':':
             case '?':
