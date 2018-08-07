@@ -297,7 +297,7 @@ static void date2gps(const datetime_t *t, gpstime_t *g) {
     ye = t->y - 1980;
 
     // Compute the number of leap days since Jan 5/Jan 6, 1980.
-    lpdays = ye / 4 + 1;
+    lpdays = ye / 4 + 1;
     if ((ye % 4) == 0 && t->m <= 2)
         lpdays--;
 
@@ -1890,7 +1890,7 @@ int main(int argc, char *argv[]) {
 
     double llh[3];
 
-    int i;
+    int i;
     channel_t chan[MAX_CHAN];
     double elvmask = 0.0; // in degree
 
@@ -2367,7 +2367,7 @@ int main(int argc, char *argv[]) {
                                  */
                             }
 
-                            // Set new navigation data bit
+                            // Set new navigation data bit
                             chan[i].dataBit = (int) ((chan[i].dwrd[chan[i].iword]>>(29 - chan[i].ibit)) & 0x1UL)*2 - 1;
                         }
                     }
